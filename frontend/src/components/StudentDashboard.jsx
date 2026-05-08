@@ -39,7 +39,10 @@ const StudentDashboard = ({ usuario, alCerrarSesion }) => {
 
     // Validación de choque de horario
     const choque = materiasSeleccionadas.find(m => 
-      m.seleccion.dia === horario.dia && m.seleccion.hora === horario.hora
+      m.seleccion.dias_semana === horario.dias_semana && (
+      m.seleccion.hora_inicio < horario.hora_fin &&
+      m.seleccion.hora_fin > horario.hora_inicio
+    )
     );
 
     if (choque) {
@@ -105,6 +108,12 @@ const StudentDashboard = ({ usuario, alCerrarSesion }) => {
           <button onClick={() => setSeccionActual('inscripcion')} className={`block w-full text-left transition ${seccionActual === 'inscripcion' ? 'text-indigo-300 font-bold' : 'hover:text-indigo-300'}`}>Inscripción</button>
           <button onClick={() => setSeccionActual('comprobante')} className={`block w-full text-left transition ${seccionActual === 'comprobante' ? 'text-indigo-300 font-bold' : 'hover:text-indigo-300'}`}>Comprobante</button>
     </nav>
+        <button
+          onClick={alCerrarSesion}
+          className="mt-10 w-full rounded-lg bg-red-500 px-4 py-2 text-sm font-bold hover:bg-red-600 transition"
+        >
+          Cerrar sesión
+        </button>
       </aside>
 
       {/* Contenido Principal */}
@@ -135,20 +144,20 @@ const StudentDashboard = ({ usuario, alCerrarSesion }) => {
             
             <div className="grid gap-4">
               {materiasDisponibles.map((materia) => (
-                <div key={materia.id} className="border rounded-lg overflow-hidden bg-white shadow-sm">
+                <div key={materia._id} className="border rounded-lg overflow-hidden bg-white shadow-sm">
                   <button 
-                    onClick={() => setMateriaExpandida(materiaExpandida === materia.id ? null : materia.id)}
+                    onClick={() => setMateriaExpandida(materiaExpandida === materia._id ? null : materia._id)}
                     className="w-full p-4 text-left font-bold flex justify-between items-center bg-gray-50 hover:bg-gray-100 transition"
                   >
                     <span>({materia.nombre_materia})<span className="text-xs font-normal text-gray-500 ml-2">({materia.cod_semestre})</span></span>
-                    <span className="text-indigo-600">{materiaExpandida === materia.id ? '▲' : '▼'}</span>
+                    <span className="text-indigo-600">{materiaExpandida === materia._id ? '▲' : '▼'}</span>
                   </button>
 
-                  {materiaExpandida === materia.id && (
+                  {materiaExpandida === materia._id && (
                     <div className="p-4 bg-white divide-y">
                       {materia.horario.length > 0 ? (
                         materia.horario.map((h) => (
-                          <div key={h.id} className="py-3 flex justify-between items-center hover:bg-indigo-50 px-2 transition rounded">
+                          <div key={`${materia._id}-${h.seccion_grupo}-${h.dias_semana}-${h.hora_inicio}`} className="py-3 flex justify-between items-center hover:bg-indigo-50 px-2 transition rounded">
                             <div>
                               <p className="font-semibold text-sm">Prof. {h.docente} - Sec: {h.seccion_grupo}</p>
                               <p className="text-xs text-gray-500">{h.dias_semana} | {h.hora_inicio} - {h.hora_fin}</p>
@@ -178,14 +187,14 @@ const StudentDashboard = ({ usuario, alCerrarSesion }) => {
               ) : (
                 <div className="space-y-4">
                   {materiasSeleccionadas.map(m => (
-                    <div key={m.id} className="flex justify-between items-center bg-gray-50 p-3 rounded border">
+                    <div key={m._id} className="flex justify-between items-center bg-gray-50 p-3 rounded border">
                       <div>
                         <p className="font-bold text-indigo-800">{m.nombre_materia}</p>
                         <p className="text-xs text-gray-600">
-                          {m.seleccion.dia} {m.seleccion.hora} | Prof: {m.seleccion.docente}
+                          {m.seleccion.dias_semana} {m.seleccion.hora_inicio}-{m.seleccion.hora_fin} | Sección: {m.seleccion.seccion_grupo}
                         </p>
                       </div>
-                      <button onClick={() => eliminarMateria(m.id)} className="text-red-500 hover:bg-red-100 p-2 rounded-full transition">🗑️</button>
+                      <button onClick={() => eliminarMateria(m._id)} className="text-red-500 hover:bg-red-100 p-2 rounded-full transition">🗑️</button>
                     </div>
                   ))}
                   <div className="flex justify-end gap-4 mt-6 pt-4 border-t">
@@ -225,10 +234,10 @@ const StudentDashboard = ({ usuario, alCerrarSesion }) => {
               </thead>
               <tbody>
                 {materiasSeleccionadas.map(m => (
-                  <tr key={m.id}>
+                  <tr key={m._id}>
                     <td className="p-3 border">{m.nombre_materia}</td>
-                    <td className="p-3 border text-center">{m.seleccion.seccion}</td>
-                    <td className="p-3 border">{m.seleccion.dia} ({m.seleccion.hora})</td>
+                    <td className="p-3 border text-center">{m.seleccion.seccion_grupo}</td>
+                    <td className="p-3 border">{m.seleccion.dias_semana} ({m.seleccion.hora_inicio} - {m.seleccion.hora_fin})</td>
                   </tr>
                 ))}
               </tbody>
