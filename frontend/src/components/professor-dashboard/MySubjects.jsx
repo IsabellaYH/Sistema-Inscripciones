@@ -23,6 +23,14 @@ const MySubjects = () => {
 
   const [idDesplegado, setIdDesplegado] = useState(null);
 
+  const getAuthConfig = () => {
+    const tokenJSON = window.localStorage.getItem("loggedAppUser");
+    if (!tokenJSON) return null;
+    return {
+      headers: { Authorization: `Bearer ${JSON.parse(tokenJSON).token}` },
+    };
+  };
+
   // Traer las materias del profesor al cargar el componente
   useEffect(() => {
     getMaterias();
@@ -52,12 +60,12 @@ const MySubjects = () => {
     e.preventDefault();
     const nueva = { ...materiaActual, id_temp: Date.now(), horario: [] };
     try {
-      const tokenJSON = window.localStorage.getItem("loggedAppUser");
-      const config = {
-        headers: { Authorization: `Bearer ${JSON.parse(tokenJSON).token}` },
-      };
+      const config = getAuthConfig();
+      if (!config) {
+        Swal.fire("Error de Sesión", "No se encontró una sesión activa.", "error");
+        return;
+      }
       const respuesta = await axios.post("/api/materias", nueva, config);
-      const materiaDesdeDB = respuesta.data;
       if (respuesta.status === 201) {
         Swal.fire(
           "¡Materia Creada!",
@@ -71,6 +79,7 @@ const MySubjects = () => {
           cod_semestre: "",
           cupos_maximos: 30,
         });
+        await getMaterias();
       }
     } catch (error) {
       Swal.fire("Error", "No se pudo crear la materia. Intenta de nuevo.");
@@ -79,13 +88,18 @@ const MySubjects = () => {
 
   const getMaterias = async () => {
     try {
-      const respuesta = await axios.get("/api/materias");
+      const config = getAuthConfig();
+      if (!config) {
+        setMaterias([]);
+        return;
+      }
+      const respuesta = await axios.get("/api/materias", config);
       setMaterias(respuesta.data);
-      console.log("Materias obtenidas:", respuesta.data);
     } catch (error) {
       Swal.fire(
         "Error",
         "No se pudieron obtener las materias. Intenta de nuevo.",
+        "error",
       );
     }
   };
@@ -279,6 +293,12 @@ const MySubjects = () => {
 
       {/* LISTADO DE MATERIAS CON DESPLEGABLE */}
       <div className="space-y-4">
+        {materias.length === 0 && (
+          <div className="bg-white p-5 rounded-xl border border-dashed border-gray-300 text-gray-600">
+            Aún no tienes materias registradas. Crea una materia para comenzar.
+          </div>
+        )}
+
         {materias.map((m) => {
           // Definimos la variable idActual para que el sistema reconozca
           // el ID de la base de datos o el temporal [History]

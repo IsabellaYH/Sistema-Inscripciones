@@ -138,9 +138,6 @@ const StudentDashboard = ({ usuario, alCerrarSesion }) => {
           <button onClick={() => setSeccionActual('inscripcion')} className={`block w-full text-left transition ${seccionActual === 'inscripcion' ? 'text-indigo-300 font-bold' : 'hover:text-indigo-300'}`}>Inscripción</button>
           <button onClick={() => setSeccionActual('comprobante')} className={`block w-full text-left transition ${seccionActual === 'comprobante' ? 'text-indigo-300 font-bold' : 'hover:text-indigo-300'}`}>Comprobante</button>
         </nav>
-        <button onClick={alCerrarSesion} className="mt-10 w-full rounded-lg bg-red-500 px-4 py-2 text-sm font-bold hover:bg-red-600 transition">
-          Cerrar sesión
-        </button>
       </aside>
 
       <main className="flex-1 p-8 overflow-y-auto">
